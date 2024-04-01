@@ -1,22 +1,22 @@
 <script>
-import { RouterView } from 'vue-router';
+// import { RouterView } from 'vue-router';
 import AppHeader from './components/AppHeader.vue';
-// import AppModal from './components/AppModal.vue';
+import AppMain from './components/AppMain.vue';
 
 export default {
   name: 'App',
   components: {
-    RouterView,
+    // RouterView,
     AppHeader,
-    // AppModal
+    AppMain
   }
 }
 </script>
 
 <template>
   <AppHeader />
-  <RouterView />
-  <!-- <AppModal /> -->
+  <!-- <RouterView /> -->
+  <AppMain />
 </template>
 
 <style></style>

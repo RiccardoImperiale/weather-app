@@ -1,5 +1,4 @@
 <script>
-import { RouterLink } from 'vue-router';
 import AppModal from './AppModal.vue'
 export default {
     name: 'AppHeader',
