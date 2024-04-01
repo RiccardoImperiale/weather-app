@@ -26,7 +26,8 @@ export default {
                 <i @click="isModalOpen = true" class="fa-solid fa-circle-info"></i>
                 <i class="fa-solid fa-plus"></i>
             </div>
-            <AppModal @close-modal="isModalOpen = false" :isModalOpen="isModalOpen" v-if="isModalOpen" />
+
+            <AppModal @close-modal="isModalOpen = false" :isModalOpen="isModalOpen" />
         </nav>
     </header>
 </template>
