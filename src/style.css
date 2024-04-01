@@ -1,7 +1,10 @@
 :root {
+    --wtr-darkest: #0f1523;
+    --wtr-darker: #182442;
     --wtr-dark: #1F2E54;
     --wtr-primary: #6E85C1;
     --wtr-light: #C9E5FF;
+    --wtr-accent: #ffbb00;
 }
 
 * {
