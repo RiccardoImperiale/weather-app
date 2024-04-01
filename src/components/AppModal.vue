@@ -9,49 +9,50 @@ export default {
 </script>
 
 <template>
-    <transition name="modal">
-        <div v-show="isModalOpen" @click="$emit('closeModal')" class="modal">
-            <transition name="card">
-                <div v-if="isModalOpen" @click.stop class="card">
-                    <div class="about">
-                        <h3>About:</h3>
-                        <p>
-                            The Local Weather allows you to track the current and
-                            future weather of cities of your choosing.
-                        </p>
+    <Teleport to='body'>
+        <transition name="modal">
+            <div v-show="isModalOpen" @click="$emit('closeModal')" class="modal">
+                <transition name="card">
+                    <div v-if="isModalOpen" @click.stop class="card">
+                        <div class="about">
+                            <h3>About:</h3>
+                            <p>
+                                The Local Weather allows you to track the current and
+                                future weather of cities of your choosing.
+                            </p>
+                        </div>
+                        <div class="how_it_works">
+                            <h3>How it works:</h3>
+                            <ol>
+                                <li>
+                                    Search for your city by entering the name into the
+                                    search bar.
+                                </li>
+                                <li>
+                                    Select a city within the results, this will take
+                                    you to the current weather for your selection.
+                                </li>
+                                <li>
+                                    Track the city by clicking on the "+" icon in the
+                                    top right. This will save the city to view at a
+                                    later time on the home page.
+                                </li>
+                            </ol>
+                        </div>
+                        <div class="removing_city">
+                            <h3>Removing a city</h3>
+                            <p>
+                                If you no longer wish to track a city, simply select
+                                the city within the home page. At the bottom of the
+                                page, there will be am option to delete the city.
+                            </p>
+                        </div>
+                        <button @click="$emit('closeModal')">Close</button>
                     </div>
-                    <div class="how_it_works">
-                        <h3>How it works:</h3>
-                        <ol>
-                            <li>
-                                Search for your city by entering the name into the
-                                search bar.
-                            </li>
-                            <li>
-                                Select a city within the results, this will take
-                                you to the current weather for your selection.
-                            </li>
-                            <li>
-                                Track the city by clicking on the "+" icon in the
-                                top right. This will save the city to view at a
-                                later time on the home page.
-                            </li>
-                        </ol>
-                    </div>
-                    <div class="removing_city">
-                        <h3>Removing a city</h3>
-                        <p>
-                            If you no longer wish to track a city, simply select
-                            the city within the home page. At the bottom of the
-                            page, there will be am option to delete the city.
-                        </p>
-                    </div>
-                    <button @click="$emit('closeModal')">Close</button>
-                </div>
-            </transition>
-        </div>
-    </transition>
-
+                </transition>
+            </div>
+        </transition>
+    </Teleport>
 </template>
 
 <style scoped>
