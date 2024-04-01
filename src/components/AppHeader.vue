@@ -16,16 +16,13 @@ export default {
 <template>
     <header class="container">
         <nav>
-            <RouterLink :to="{ name: 'home' }">
-                <div class="logo">
-                    <img width="70px" src="/img/logo.png" alt="fwefw">
-                </div>
-            </RouterLink>
+            <div class="logo">
+                <img width="70px" src="/img/logo.png" alt="fwefw">
+            </div>
             <div class="buttons">
                 <i @click="isModalOpen = true" class="fa-solid fa-circle-info"></i>
                 <i class="fa-solid fa-plus"></i>
             </div>
-
             <AppModal @close-modal="isModalOpen = false" :isModalOpen="isModalOpen" />
         </nav>
     </header>

@@ -59,13 +59,14 @@ export default {
 .modal {
     position: absolute;
     inset: 0;
-    width: 100vw;
+    width: 100%;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.421);
     color: var(--wtr-dark);
+    cursor: pointer;
 
     .card {
         padding: 2rem 3rem;
@@ -76,6 +77,7 @@ export default {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        cursor: default;
 
         & h3 {
             margin-bottom: .25rem;
