@@ -9,8 +9,8 @@ export default {
 </script>
 
 <template>
-    <div class="modal">
-        <div class="card">
+    <div @click="$emit('closeModal')" class="modal">
+        <div @click.stop class="card">
             <div class="about">
                 <h3>About:</h3>
                 <p>
