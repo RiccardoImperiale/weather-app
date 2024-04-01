@@ -1,0 +1,25 @@
+:root {
+    --wtr-dark: #1F2E54;
+    --wtr-primary: #6E85C1;
+    --wtr-light: #C9E5FF;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Roboto", sans-serif;
+    background-color: rgb(28, 28, 28);
+    background-color: var(--wtr-dark);
+}
+
+.container {
+    width: 80%;
+    max-width: 800px;
+    margin: auto;
+}
+
+/* header style ---------------------------------------> */
