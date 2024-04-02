@@ -15,7 +15,8 @@ export default {
             isListOpen: false,
             cityTime: '',
             cityDate: '',
-            savedLocations: []
+            savedLocations: [],
+            savedWeatherData: null
         }
     },
     methods: {
@@ -95,10 +96,10 @@ export default {
             return this.savedLocations.some(location => location.cityName === cityName);
         },
         getSavedCityWeather(index) {
-            const savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
-            if (savedWeatherData && this.savedLocations.length !== 0) {
-                this.cityWeather = savedWeatherData[index].cityWeather;
-                this.weatherData = savedWeatherData[index].weatherData;
+            this.savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
+            if (this.savedWeatherData && this.savedLocations.length !== 0) {
+                this.cityWeather = this.savedWeatherData[index].cityWeather;
+                this.weatherData = this.savedWeatherData[index].weatherData;
                 this.getCityDateTime(this.weatherData);
             }
         },
@@ -108,11 +109,11 @@ export default {
         }
     },
     mounted() {
-        const savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
-        if (savedWeatherData && this.savedLocations.length !== 0) {
-            savedWeatherData.forEach(city => this.savedLocations.push(city));
-            this.cityWeather = savedWeatherData[0].cityWeather;
-            this.weatherData = savedWeatherData[0].weatherData;
+        const localStoreData = JSON.parse(localStorage.getItem('savedLocations'));
+        if (localStoreData.length > 0) {
+            localStoreData.forEach(city => this.savedLocations.push(city));
+            this.cityWeather = localStoreData[0].cityWeather;
+            this.weatherData = localStoreData[0].weatherData;
         }
     }
 }
@@ -125,38 +126,41 @@ export default {
             <input @keyup="inputSearch === '' ? isListOpen = false : isListOpen = true" @keyup.enter="searchCity"
                 v-model="inputSearch" type="text" placeholder="Search City...">
             <ul v-if="searchResults.length > 0 && isListOpen">
-                <li @click="getCityWeather(city)" v-for=" city  in  searchResults " :key="city.id">{{ city.place_name
-                    }}
+                <li @click="getCityWeather(city)" v-for=" city  in  searchResults" :key="city.id">
+                    {{ city.place_name }}
                 </li>
             </ul>
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
         <!-- saved locations -->
         <button @click="saveToLocalStorage">add</button>
-
-        <div v-if="savedLocations.length !== 0" class="saved_cities">
-            <h3 class="capitalize">saved locations</h3>
-            <div class="cities_container">
-                <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
-                    <div class="city_name">{{ city.cityName }}</div>
-                    <i @click="deleteCity(index)" class="fa-regular fa-trash-can"></i>
+        <Transition name="pop">
+            <div v-if="savedLocations.length !== 0" class="saved_cities">
+                <h3 class="capitalize">saved locations</h3>
+                <div class="cities_container">
+                    <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
+                        <div class="city_name">{{ city.cityName }}</div>
+                        <i @click="deleteCity(index)" class="fa-regular fa-trash-can"></i>
+                    </div>
                 </div>
             </div>
-        </div>
+        </Transition>
 
         <!-- weather -->
-        <div v-if="cityWeather.length !== 0" class="weather">
-            <div class="top">
-                <h2>{{ cityWeather.name }}</h2>
-                <h5>{{ cityDate }}<br>{{ cityTime }}</h5>
+        <Transition name="pop">
+            <div v-if="cityWeather.length !== 0" class="weather">
+                <div class="top">
+                    <h2>{{ cityWeather.name }}</h2>
+                    <h5>{{ cityDate }}<br>{{ cityTime }}</h5>
+                </div>
+                <div class="middle">
+                    <h1>{{ cityWeather.main.temp.toFixed(0) }}<span>°</span></h1>
+                    <img :src="'/img/' + cityWeather.weather[0].icon + '.png'" alt="wheather icon">
+                    <h5 class="capitalize">Feels Like {{ cityWeather.main.temp.toFixed(0)
+                        }}°<br>{{ cityWeather.weather[0].description }}</h5>
+                </div>
             </div>
-            <div class="middle">
-                <h1>{{ cityWeather.main.temp.toFixed(0) }}<span>°</span></h1>
-                <img :src="'/img/' + cityWeather.weather[0].icon + '.png'" alt="wheather icon">
-                <h5 class="capitalize">Feels Like {{ cityWeather.main.temp.toFixed(0)
-                    }}°<br>{{ cityWeather.weather[0].description }}</h5>
-            </div>
-        </div>
+        </Transition>
         <!-- hourly weather -->
         <div v-if="weatherData.length !== 0" class="hourly_weather">
             <h3 class="capitalize">Hourly weather</h3>
@@ -186,6 +190,20 @@ export default {
 </template>
 
 <style scoped>
+.pop-enter-active,
+.pop-leave-active {
+    transition: all .25s ease;
+}
+
+.pop-enter-from {
+    transform: scale(0.5);
+}
+
+.pop-leave-to {
+    opacity: 0;
+    transform: scale(0);
+}
+
 main {
     .search {
         position: relative;
