@@ -96,7 +96,7 @@ export default {
             if (savedWeatherData) {
                 this.cityWeather = savedWeatherData[index].cityWeather;
                 this.weatherData = savedWeatherData[index].weatherData;
-                this.getCityDateTime(this.cityWeather)
+                this.getCityDateTime(this.weatherData);
             }
         }
     },
@@ -120,11 +120,6 @@ export default {
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
         <!-- weather -->
-        <button @click="saveToLocalStorage">fwiuhfpiuwh</button>
-
-        <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations">{{ city.cityName }}</div>
-
-
         <div v-if="cityWeather.length !== 0" class="weather">
             <div class="top">
                 <h2>{{ cityWeather.name }}</h2>
@@ -159,6 +154,19 @@ export default {
                         <p>H: {{ Math.round(daily.temp.max) }}°</p>
                         <p>L: {{ Math.round(daily.temp.min) }}°</p>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- saved locations -->
+        <button @click="saveToLocalStorage">add</button>
+
+        <div v-if="weatherData.length !== 0" class="saved_cities">
+            <h3 class="capitalize">saved locations</h3>
+            <div class="cities_container">
+                <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
+                    <div class="city_name">{{ city.cityName }}</div>
+                    <i class="fa-regular fa-trash-can"></i>
                 </div>
             </div>
         </div>
@@ -318,8 +326,8 @@ main {
         padding: 2rem 0 0.5rem 0;
         color: var(--wtr-primary);
         border-top: 1px solid var(--wtr-primary);
-        border-bottom: 1px solid var(--wtr-primary);
-        margin: 1rem 0 3rem 0;
+        /* border-bottom: 1px solid var(--wtr-primary); */
+        margin: 1rem 0 0 0;
 
         & h3 {
             text-align: center;
@@ -360,6 +368,51 @@ main {
                     & p {
                         width: 3rem;
                         text-align: end;
+                    }
+                }
+            }
+        }
+    }
+
+    .saved_cities {
+        padding: 2rem 0;
+        color: var(--wtr-primary);
+        border-top: 1px solid var(--wtr-primary);
+        border-bottom: 1px solid var(--wtr-primary);
+        margin-bottom: 3rem;
+
+        & h3 {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .cities_container {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-top: 1rem;
+
+            .city {
+                background-color: var(--wtr-darker);
+                color: var(--wtr-primary);
+                padding: .5rem 1rem;
+                border-radius: .5rem;
+                display: flex;
+                gap: .65rem;
+                align-items: center;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--wtr-darkest);
+                }
+
+                & i {
+                    cursor: pointer;
+
+                    &:hover {
+                        color: var(--wtr-accent);
                     }
                 }
             }
