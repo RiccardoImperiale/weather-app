@@ -5,6 +5,9 @@ const mapboxAPIKey = "pk.eyJ1Ijoiam9obmtvbWFybmlja2kiLCJhIjoiY2t5NjFzODZvMHJkaDJ
 
 export default {
     name: 'AppMain',
+    props: {
+        saveLocation: Boolean
+    },
     data() {
         return {
             inputSearch: '',
@@ -112,9 +115,12 @@ export default {
         const localStoreData = JSON.parse(localStorage.getItem('savedLocations'));
         if (localStoreData.length > 0) {
             localStoreData.forEach(city => this.savedLocations.push(city));
-            this.cityWeather = localStoreData[0].cityWeather;
-            this.weatherData = localStoreData[0].weatherData;
+            this.cityWeather = localStoreData[localStoreData.length - 1].cityWeather;
+            this.weatherData = localStoreData[localStoreData.length - 1].weatherData;
         }
+    },
+    beforeUpdate() {
+        this.saveLocation === true && this.saveToLocalStorage();
     }
 }
 
@@ -133,7 +139,7 @@ export default {
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
         <!-- saved locations -->
-        <button @click="saveToLocalStorage">add</button>
+        <!-- <button @click="saveToLocalStorage">add</button> -->
         <Transition name="pop">
             <div v-if="savedLocations.length !== 0" class="saved_cities">
                 <h3 class="capitalize">saved locations</h3>
@@ -145,7 +151,6 @@ export default {
                 </div>
             </div>
         </Transition>
-
         <!-- weather -->
         <Transition name="pop">
             <div v-if="cityWeather.length !== 0" class="weather">

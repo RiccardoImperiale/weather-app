@@ -7,13 +7,23 @@ export default {
   components: {
     AppHeader,
     AppMain
+  },
+  data() {
+    return {
+      saveLocation: false
+    }
+  },
+  methods: {
+    callback() {
+      this.saveLocation = true
+    }
   }
 }
 </script>
 
 <template>
-  <AppHeader />
-  <AppMain />
+  <AppHeader @custom-event="callback" />
+  <AppMain :saveLocation="saveLocation" />
 </template>
 
 <style></style>

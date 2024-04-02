@@ -1,5 +1,6 @@
 <script>
 import AppModal from './AppModal.vue'
+
 export default {
     name: 'AppHeader',
     components: {
@@ -7,9 +8,14 @@ export default {
     },
     data() {
         return {
-            isModalOpen: false
+            isModalOpen: false,
         }
     },
+    methods: {
+        saveLocation() {
+            this.$emit('custom-event');
+        }
+    }
 }
 </script>
 
@@ -17,11 +23,11 @@ export default {
     <header class="container">
         <nav>
             <div class="logo">
-                <img width="70px" src="/img/logo.png" alt="fwefw">
+                <img width="70px" src="/img/logo.png" alt="app logo">
             </div>
             <div class="buttons">
                 <i @click="isModalOpen = true" class="fa-solid fa-circle-info"></i>
-                <i class="fa-solid fa-plus"></i>
+                <i @click="saveLocation" class="fa-solid fa-plus"></i>
             </div>
             <AppModal @close-modal="isModalOpen = false" :isModalOpen="isModalOpen" />
         </nav>
