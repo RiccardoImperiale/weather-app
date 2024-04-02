@@ -86,22 +86,34 @@ export default {
                 weatherData: this.weatherData,
                 cityWeather: this.cityWeather
             };
-            if (cityData.cityWeather.length !== 0) {
+            if (cityData.cityWeather.length !== 0 && !this.isCityAlreadySaved(cityData.cityName)) {
                 this.savedLocations.push(cityData);
                 localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
             }
         },
+        isCityAlreadySaved(cityName) {
+            return this.savedLocations.some(location => location.cityName === cityName);
+        },
         getSavedCityWeather(index) {
             const savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
-            if (savedWeatherData) {
+            if (savedWeatherData && this.savedLocations.length !== 0) {
                 this.cityWeather = savedWeatherData[index].cityWeather;
                 this.weatherData = savedWeatherData[index].weatherData;
                 this.getCityDateTime(this.weatherData);
             }
+        },
+        deleteCity(index) {
+            this.savedLocations.splice(index, 1);
+            localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
         }
     },
-    created() {
-
+    mounted() {
+        const savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
+        if (savedWeatherData && this.savedLocations.length !== 0) {
+            savedWeatherData.forEach(city => this.savedLocations.push(city));
+            this.cityWeather = savedWeatherData[0].cityWeather;
+            this.weatherData = savedWeatherData[0].weatherData;
+        }
     }
 }
 
@@ -119,6 +131,19 @@ export default {
             </ul>
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
+        <!-- saved locations -->
+        <button @click="saveToLocalStorage">add</button>
+
+        <div v-if="savedLocations.length !== 0" class="saved_cities">
+            <h3 class="capitalize">saved locations</h3>
+            <div class="cities_container">
+                <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
+                    <div class="city_name">{{ city.cityName }}</div>
+                    <i @click="deleteCity(index)" class="fa-regular fa-trash-can"></i>
+                </div>
+            </div>
+        </div>
+
         <!-- weather -->
         <div v-if="cityWeather.length !== 0" class="weather">
             <div class="top">
@@ -154,19 +179,6 @@ export default {
                         <p>H: {{ Math.round(daily.temp.max) }}°</p>
                         <p>L: {{ Math.round(daily.temp.min) }}°</p>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- saved locations -->
-        <button @click="saveToLocalStorage">add</button>
-
-        <div v-if="weatherData.length !== 0" class="saved_cities">
-            <h3 class="capitalize">saved locations</h3>
-            <div class="cities_container">
-                <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
-                    <div class="city_name">{{ city.cityName }}</div>
-                    <i class="fa-regular fa-trash-can"></i>
                 </div>
             </div>
         </div>
@@ -240,13 +252,57 @@ main {
         }
     }
 
+    .saved_cities {
+        padding: 2rem 0;
+        color: var(--wtr-primary);
+        /* border-top: 1px solid var(--wtr-primary); */
+        border-bottom: 1px solid var(--wtr-primary);
+
+        & h3 {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .cities_container {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-top: 1rem;
+
+            .city {
+                background-color: var(--wtr-darker);
+                color: var(--wtr-primary);
+                padding: .5rem 1rem;
+                border-radius: .5rem;
+                display: flex;
+                gap: .65rem;
+                align-items: center;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: var(--wtr-darkest);
+                }
+
+                & i {
+                    cursor: pointer;
+
+                    &:hover {
+                        color: var(--wtr-accent);
+                    }
+                }
+            }
+        }
+    }
+
     .weather {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
         border-bottom: 1px solid var(--wtr-primary);
-        padding: 6rem 0;
+        padding: 5rem 0;
         gap: 3rem;
         color: var(--wtr-light);
 
@@ -269,7 +325,6 @@ main {
         }
 
         .middle {
-
             & h1 {
                 font-size: 9rem;
                 margin-left: 1rem;
@@ -284,7 +339,6 @@ main {
             & img {
                 height: 300px;
                 margin-bottom: -1.5rem;
-
             }
 
         }
@@ -326,8 +380,8 @@ main {
         padding: 2rem 0 0.5rem 0;
         color: var(--wtr-primary);
         border-top: 1px solid var(--wtr-primary);
-        /* border-bottom: 1px solid var(--wtr-primary); */
-        margin: 1rem 0 0 0;
+        border-bottom: 1px solid var(--wtr-primary);
+        margin: 1rem 0 10rem 0;
 
         & h3 {
             text-align: center;
@@ -373,51 +427,5 @@ main {
             }
         }
     }
-
-    .saved_cities {
-        padding: 2rem 0;
-        color: var(--wtr-primary);
-        border-top: 1px solid var(--wtr-primary);
-        border-bottom: 1px solid var(--wtr-primary);
-        margin-bottom: 3rem;
-
-        & h3 {
-            text-align: center;
-            font-weight: 500;
-            margin-bottom: 1rem;
-        }
-
-        .cities_container {
-            display: flex;
-            gap: .5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding-top: 1rem;
-
-            .city {
-                background-color: var(--wtr-darker);
-                color: var(--wtr-primary);
-                padding: .5rem 1rem;
-                border-radius: .5rem;
-                display: flex;
-                gap: .65rem;
-                align-items: center;
-                cursor: pointer;
-
-                &:hover {
-                    background-color: var(--wtr-darkest);
-                }
-
-                & i {
-                    cursor: pointer;
-
-                    &:hover {
-                        color: var(--wtr-accent);
-                    }
-                }
-            }
-        }
-    }
-
 }
 </style>
