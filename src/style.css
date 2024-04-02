@@ -9,7 +9,7 @@
 }
 
 html {
-    scrollbar-color: var(--wtr-primary) var(--wtr-dark);
+    scrollbar-color: var(--wtr-darker) var(--wtr-dark);
     scrollbar-width: thin;
 }
 

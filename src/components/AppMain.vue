@@ -10,7 +10,7 @@ export default {
             inputSearch: '',
             searchResults: [],
             cityWeather: [],
-            hourlyWeather: [],
+            weatherData: [],
             searchError: false,
             isListOpen: false,
             cityTime: '',
@@ -39,7 +39,7 @@ export default {
             const [lon, lat] = city.geometry.coordinates;
             this.isListOpen = false;
             this.getCurrentWeather(lon, lat);
-            this.getHourlyWeather(lon, lat);
+            this.getWeatherData(lon, lat);
             this.inputSearch = '';
         },
         getCurrentWeather(lon, lat) {
@@ -53,11 +53,11 @@ export default {
                     console.log(err.message);
                 })
         },
-        getHourlyWeather(lon, lat) {
-            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`)
+        getWeatherData(lon, lat) {
+            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
                 .then(res => {
-                    this.hourlyWeather = res.data.hourly
-                    console.log(this.hourlyWeather);
+                    this.weatherData = res.data
+                    console.log(this.weatherData);
                 })
                 .catch(err => {
                     this.searchError = true;
@@ -78,6 +78,11 @@ export default {
             const formattedTime = currentTimeUTC.toFormat('h a');
             return formattedTime;
         },
+        getDayOfWeek(dt) {
+            const dateTime = DateTime.fromSeconds(dt);
+            const dayOfWeek = dateTime.weekdayLong;
+            return dayOfWeek;
+        }
     },
     created() {
 
@@ -90,7 +95,7 @@ export default {
     <main class="container">
         <div class="search">
             <input @keyup="inputSearch === '' ? isListOpen = false : isListOpen = true" @keyup.enter="searchCity"
-                v-model="inputSearch" type="text" placeholder="search city">
+                v-model="inputSearch" type="text" placeholder="Search City...">
             <ul v-if="searchResults.length > 0 && isListOpen">
                 <li @click="getCityWeather(city)" v-for=" city  in  searchResults " :key="city.id">{{ city.place_name
                     }}
@@ -98,6 +103,7 @@ export default {
             </ul>
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
+        <!-- weather -->
         <div v-if="cityWeather.length !== 0" class="weather">
             <div class="top">
                 <h2>{{ cityWeather.name }}</h2>
@@ -111,14 +117,28 @@ export default {
             </div>
         </div>
         <!-- hourly weather -->
-        <div v-if="hourlyWeather.length > 0" class="hourly_weather">
+        <div v-if="weatherData.length !== 0" class="hourly_weather">
             <h3 class="capitalize">Hourly weather</h3>
             <div class="hours_container">
-                <div v-for="hourly in hourlyWeather" class="hour" :key="hourly.dt">
+                <div v-for="hourly in weatherData.hourly" class="hour" :key="hourly.dt">
                     <p>{{ getHourlyTime(hourly.dt) }}</p>
-                    <img :src="'/img/' + hourly.weather[0].icon + '.png'" alt="">
+                    <img :src="'/img/' + hourly.weather[0].icon + '.png'" alt="weather icon">
+                    <div class="temp">{{ Math.round(hourly.temp) }}°</div>
                 </div>
-
+            </div>
+        </div>
+        <!-- weekly weather -->
+        <div v-if="weatherData.length !== 0" class="weekly_weather">
+            <h3 class="capitalize">weekly weather</h3>
+            <div class="days_container">
+                <div v-for="daily in weatherData.daily" class="day" :key="daily.dt">
+                    <p>{{ getDayOfWeek(daily.dt) }}</p>
+                    <img :src="'/img/' + daily.weather[0].icon + '.png'" alt="weather icon">
+                    <div class="temp">
+                        <p>H: {{ Math.round(daily.temp.max) }}°</p>
+                        <p>L: {{ Math.round(daily.temp.min) }}°</p>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -263,6 +283,59 @@ main {
 
                 & img {
                     width: 60px;
+                }
+
+                .temp {
+                    margin-bottom: .5rem;
+                }
+            }
+        }
+    }
+
+    .weekly_weather {
+        padding: 2rem 0;
+        color: var(--wtr-primary);
+        border-top: 1px solid var(--wtr-primary);
+        margin-top: 1rem;
+
+        & h3 {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .days_container {
+            display: flex;
+            flex-direction: column;
+            gap: .1rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            scrollbar-width: thin;
+
+            .day {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border-bottom: 1px solid var(--wtr-darkest);
+
+                & p {
+                    width: calc(53% - 40px);
+                    text-align: start;
+                }
+
+                & img {
+                    width: 60px;
+                }
+
+                .temp {
+                    display: flex;
+                    justify-content: flex-end;
+                    width: 47%;
+
+                    & p {
+                        width: 3rem;
+                        text-align: end;
+                    }
                 }
             }
         }
