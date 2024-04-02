@@ -10,6 +10,7 @@ export default {
             inputSearch: '',
             searchResults: [],
             cityWeather: [],
+            hourlyWeather: [],
             searchError: false,
             isListOpen: false,
             cityTime: '',
@@ -23,7 +24,6 @@ export default {
                     .then(res => {
                         this.isListOpen = true;
                         this.searchResults = res.data.features;
-                        console.log(this.searchResults);
                         this.setError(this.searchResults);
                     })
                     .catch(err => {
@@ -38,20 +38,40 @@ export default {
         getCityWeather(city) {
             const [lon, lat] = city.geometry.coordinates;
             this.isListOpen = false;
+            this.getCurrentWeather(lon, lat);
 
+            this.inputSearch = '';
+        },
+        getCurrentWeather(lon, lat) {
             axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=17b5bd1f95000e59acd9e4995f34d2aa&units=metric`)
                 .then(res => {
                     this.cityWeather = res.data;
-                    this.getCityDateTime(this.cityWeather);
-                    console.log(res.data);
+                    this.getCityDateTime(res.data);
+                    console.log(res);
                 })
                 .catch(err => {
                     this.searchError = true;
                     console.log(err.message);
                 })
-
-            this.inputSearch = '';
         },
+        // getHourlyWeather(city) {
+        //     const [lon, lat] = city.geometry.coordinates;
+        //     this.isListOpen = false;
+
+        //     axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`)
+        //         .then(res => {
+        //             this.hourlyWeather = res.data.hourly
+        //             // this.cityWeather = res.data;
+        //             // this.getCityDateTime(this.cityWeather);
+        //             console.log(this.hourlyWeather);
+        //         })
+        //         .catch(err => {
+        //             this.searchError = true;
+        //             console.log(err.message);
+        //         })
+
+        //     this.inputSearch = '';
+        // },
         capitalizeWords(phrase) {
             const words = phrase.split(' ');
             const capitalizedWords = words.map(word => {
@@ -60,11 +80,16 @@ export default {
             return capitalizedWords.join(' ');
         },
         getCityDateTime(city) {
+            console.log(city);
             const unixTimestamp = city.dt;
             const currentTimeUTC = DateTime.fromSeconds(unixTimestamp);
-            const currentTimeLocal = currentTimeUTC.setZone(city.timezone);
-            this.cityDate = currentTimeLocal.toFormat('EEE, MMMM dd');
-            this.cityTime = currentTimeLocal.toFormat('hh:mm a');
+            // const currentTimeLocal = currentTimeUTC.setZone(city.timezone);
+            // this.cityDate = currentTimeLocal.toFormat('EEE, MMMM dd');
+            // this.cityTime = currentTimeLocal.toFormat('hh:mm a');
+            const timezoneOffsetSeconds = city.timezone_offset;
+            const adjustedTimeUTC = currentTimeUTC.plus({ seconds: timezoneOffsetSeconds });
+            this.cityDate = adjustedTimeUTC.toFormat('EEE, MMMM dd');
+            this.cityTime = adjustedTimeUTC.toFormat('hh:mm a');
         },
     },
     created() {
@@ -97,9 +122,8 @@ export default {
                 <h5>Feels Like {{ cityWeather.main.temp.toFixed(0)
                     }}°<br>{{ capitalizeWords(cityWeather.weather[0].description) }}</h5>
             </div>
-            <!-- <div class="bottom">
-            </div> -->
         </div>
+        <!-- hourly weather -->
     </main>
 </template>
 
