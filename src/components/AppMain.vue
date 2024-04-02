@@ -15,6 +15,7 @@ export default {
             isListOpen: false,
             cityTime: '',
             cityDate: '',
+            savedLocations: []
         }
     },
     methods: {
@@ -46,7 +47,6 @@ export default {
             axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=17b5bd1f95000e59acd9e4995f34d2aa&units=metric`)
                 .then(res => {
                     this.cityWeather = res.data;
-                    this.getCityDateTime(res.data);
                 })
                 .catch(err => {
                     this.searchError = true;
@@ -56,8 +56,8 @@ export default {
         getWeatherData(lon, lat) {
             axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
                 .then(res => {
-                    this.weatherData = res.data
-                    console.log(this.weatherData);
+                    this.weatherData = res.data;
+                    this.getCityDateTime(res.data)
                 })
                 .catch(err => {
                     this.searchError = true;
@@ -65,13 +65,10 @@ export default {
                 })
         },
         getCityDateTime(city) {
-            console.log(city);
-            const unixTimestamp = city.dt;
-            const currentTimeUTC = DateTime.fromSeconds(unixTimestamp);
-            const timezoneOffsetSeconds = city.timezone_offset;
-            const adjustedTimeUTC = currentTimeUTC.plus({ seconds: timezoneOffsetSeconds });
-            this.cityDate = adjustedTimeUTC.toFormat('EEE, MMMM dd');
-            this.cityTime = adjustedTimeUTC.toFormat('hh:mm a');
+            const unixTimestamp = city.current.dt;
+            const currentTimeUTC = DateTime.fromSeconds(unixTimestamp, { zone: city.timezone });
+            this.cityDate = currentTimeUTC.toFormat('EEE, MMMM dd');
+            this.cityTime = currentTimeUTC.toFormat('hh:mm a');
         },
         getHourlyTime(dt) {
             const currentTimeUTC = DateTime.fromSeconds(dt);
@@ -82,6 +79,25 @@ export default {
             const dateTime = DateTime.fromSeconds(dt);
             const dayOfWeek = dateTime.weekdayLong;
             return dayOfWeek;
+        },
+        saveToLocalStorage() {
+            const cityData = {
+                cityName: this.cityWeather.name,
+                weatherData: this.weatherData,
+                cityWeather: this.cityWeather
+            };
+            if (cityData.cityWeather.length !== 0) {
+                this.savedLocations.push(cityData);
+                localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
+            }
+        },
+        getSavedCityWeather(index) {
+            const savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
+            if (savedWeatherData) {
+                this.cityWeather = savedWeatherData[index].cityWeather;
+                this.weatherData = savedWeatherData[index].weatherData;
+                this.getCityDateTime(this.cityWeather)
+            }
         }
     },
     created() {
@@ -104,6 +120,11 @@ export default {
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
         <!-- weather -->
+        <button @click="saveToLocalStorage">fwiuhfpiuwh</button>
+
+        <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations">{{ city.cityName }}</div>
+
+
         <div v-if="cityWeather.length !== 0" class="weather">
             <div class="top">
                 <h2>{{ cityWeather.name }}</h2>
@@ -173,6 +194,7 @@ main {
             &::placeholder {
                 color: var(--wtr-primary);
                 font-weight: 100;
+                letter-spacing: .05rem;
             }
         }
 
@@ -293,10 +315,11 @@ main {
     }
 
     .weekly_weather {
-        padding: 2rem 0;
+        padding: 2rem 0 0.5rem 0;
         color: var(--wtr-primary);
         border-top: 1px solid var(--wtr-primary);
-        margin-top: 1rem;
+        border-bottom: 1px solid var(--wtr-primary);
+        margin: 1rem 0 3rem 0;
 
         & h3 {
             text-align: center;
@@ -307,16 +330,18 @@ main {
         .days_container {
             display: flex;
             flex-direction: column;
-            gap: .1rem;
             overflow-x: auto;
             padding: 1rem 0;
             scrollbar-width: thin;
+
+            .day:not(:last-child) {
+                border-bottom: 1px solid var(--wtr-darkest);
+            }
 
             .day {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                border-bottom: 1px solid var(--wtr-darkest);
 
                 & p {
                     width: calc(53% - 40px);
