@@ -39,7 +39,7 @@ export default {
             const [lon, lat] = city.geometry.coordinates;
             this.isListOpen = false;
             this.getCurrentWeather(lon, lat);
-
+            this.getHourlyWeather(lon, lat);
             this.inputSearch = '';
         },
         getCurrentWeather(lon, lat) {
@@ -47,49 +47,36 @@ export default {
                 .then(res => {
                     this.cityWeather = res.data;
                     this.getCityDateTime(res.data);
-                    console.log(res);
                 })
                 .catch(err => {
                     this.searchError = true;
                     console.log(err.message);
                 })
         },
-        // getHourlyWeather(city) {
-        //     const [lon, lat] = city.geometry.coordinates;
-        //     this.isListOpen = false;
-
-        //     axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`)
-        //         .then(res => {
-        //             this.hourlyWeather = res.data.hourly
-        //             // this.cityWeather = res.data;
-        //             // this.getCityDateTime(this.cityWeather);
-        //             console.log(this.hourlyWeather);
-        //         })
-        //         .catch(err => {
-        //             this.searchError = true;
-        //             console.log(err.message);
-        //         })
-
-        //     this.inputSearch = '';
-        // },
-        capitalizeWords(phrase) {
-            const words = phrase.split(' ');
-            const capitalizedWords = words.map(word => {
-                return word.charAt(0).toUpperCase() + word.slice(1);
-            });
-            return capitalizedWords.join(' ');
+        getHourlyWeather(lon, lat) {
+            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=imperial`)
+                .then(res => {
+                    this.hourlyWeather = res.data.hourly
+                    console.log(this.hourlyWeather);
+                })
+                .catch(err => {
+                    this.searchError = true;
+                    console.log(err.message);
+                })
         },
         getCityDateTime(city) {
             console.log(city);
             const unixTimestamp = city.dt;
             const currentTimeUTC = DateTime.fromSeconds(unixTimestamp);
-            // const currentTimeLocal = currentTimeUTC.setZone(city.timezone);
-            // this.cityDate = currentTimeLocal.toFormat('EEE, MMMM dd');
-            // this.cityTime = currentTimeLocal.toFormat('hh:mm a');
             const timezoneOffsetSeconds = city.timezone_offset;
             const adjustedTimeUTC = currentTimeUTC.plus({ seconds: timezoneOffsetSeconds });
             this.cityDate = adjustedTimeUTC.toFormat('EEE, MMMM dd');
             this.cityTime = adjustedTimeUTC.toFormat('hh:mm a');
+        },
+        getHourlyTime(dt) {
+            const currentTimeUTC = DateTime.fromSeconds(dt);
+            const formattedTime = currentTimeUTC.toFormat('h a');
+            return formattedTime;
         },
     },
     created() {
@@ -119,11 +106,21 @@ export default {
             <div class="middle">
                 <h1>{{ cityWeather.main.temp.toFixed(0) }}<span>°</span></h1>
                 <img :src="'/img/' + cityWeather.weather[0].icon + '.png'" alt="wheather icon">
-                <h5>Feels Like {{ cityWeather.main.temp.toFixed(0)
-                    }}°<br>{{ capitalizeWords(cityWeather.weather[0].description) }}</h5>
+                <h5 class="capitalize">Feels Like {{ cityWeather.main.temp.toFixed(0)
+                    }}°<br>{{ cityWeather.weather[0].description }}</h5>
             </div>
         </div>
         <!-- hourly weather -->
+        <div v-if="hourlyWeather.length > 0" class="hourly_weather">
+            <h3 class="capitalize">Hourly weather</h3>
+            <div class="hours_container">
+                <div v-for="hourly in hourlyWeather" class="hour" :key="hourly.dt">
+                    <p>{{ getHourlyTime(hourly.dt) }}</p>
+                    <img :src="'/img/' + hourly.weather[0].icon + '.png'" alt="">
+                </div>
+
+            </div>
+        </div>
     </main>
 </template>
 
@@ -242,6 +239,33 @@ main {
 
         }
 
+    }
+
+    .hourly_weather {
+        padding: 2rem 0;
+        color: var(--wtr-primary);
+
+        & h3 {
+            text-align: center;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .hours_container {
+            display: flex;
+            gap: 2rem;
+            overflow-x: auto;
+            padding: 1rem 0;
+            scrollbar-width: thin;
+
+            .hour {
+                text-align: center;
+
+                & img {
+                    width: 60px;
+                }
+            }
+        }
     }
 
 }
