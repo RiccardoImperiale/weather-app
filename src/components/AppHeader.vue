@@ -1,5 +1,6 @@
 <script>
 import AppModal from './AppModal.vue'
+// import { store } from '../store.js';
 
 export default {
     name: 'AppHeader',
@@ -8,11 +9,11 @@ export default {
     },
     data() {
         return {
+            // store,
             isModalOpen: false,
         }
-    },
-    methods: {
-        saveLocation() {
+    }, methods: {
+        triggerMethod() {
             this.$emit('custom-event');
         }
     }
@@ -27,7 +28,7 @@ export default {
             </div>
             <div class="buttons">
                 <i @click="isModalOpen = true" class="fa-solid fa-circle-info"></i>
-                <i @click="saveLocation" class="fa-solid fa-plus"></i>
+                <i @click="triggerMethod" class="fa-solid fa-plus"></i>
             </div>
             <AppModal @close-modal="isModalOpen = false" :isModalOpen="isModalOpen" />
         </nav>
