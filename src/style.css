@@ -6,6 +6,14 @@
     --wtr-light: #C9E5FF;
     --wtr-danger: #b51d1d;
     --wtr-accent: #ffbb00;
+    /* 
+    --wtr-darkest: #404b65;
+    --wtr-darker: #1d2d57;
+    --wtr-dark: #C9E5FF;
+    --wtr-primary: #658CAF;
+    --wtr-light: #3C538F;
+    --wtr-danger: #b51d1d;
+    --wtr-accent: #ffbb00; */
 }
 
 html {
