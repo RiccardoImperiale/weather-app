@@ -109,6 +109,10 @@ export default {
         deleteCity(index) {
             this.savedLocations.splice(index, 1);
             localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
+        },
+        openList() {
+            this.inputSearch === '' ? this.isListOpen = false : this.isListOpen = true;
+            this.inputSearch === '' && !this.isListOpen && (this.searchResults = []);
         }
     },
     mounted() {
@@ -129,10 +133,10 @@ export default {
 <template>
     <main class="container">
         <div class="search">
-            <input @keyup="inputSearch === '' ? isListOpen = false : isListOpen = true" @keyup.enter="searchCity"
-                v-model="inputSearch" type="text" placeholder="Search City...">
+            <input @keyup="openList" @keyup.enter="searchCity" v-model="inputSearch" type="text"
+                placeholder="Search City...">
             <ul v-if="searchResults.length > 0 && isListOpen">
-                <li @click="getCityWeather(city)" v-for=" city  in  searchResults" :key="city.id">
+                <li @click="getCityWeather(city)" v-for=" city in searchResults" :key="city.id">
                     {{ city.place_name }}
                 </li>
             </ul>
