@@ -1,24 +1,20 @@
 <script>
 import axios from 'axios';
 import { DateTime } from 'luxon';
+import { store } from '../store.js';
 const mapboxAPIKey = "pk.eyJ1Ijoiam9obmtvbWFybmlja2kiLCJhIjoiY2t5NjFzODZvMHJkaDJ1bWx6OGVieGxreSJ9.IpojdT3U3NENknF6_WhR2Q";
 
 export default {
     name: 'AppMain',
-    props: {
-        saveLocation: Boolean
-    },
     data() {
         return {
+            store,
             inputSearch: '',
             searchResults: [],
-            cityWeather: [],
-            weatherData: [],
             searchError: false,
             isListOpen: false,
             cityTime: '',
             cityDate: '',
-            savedLocations: [],
             savedWeatherData: null
         }
     },
@@ -41,6 +37,7 @@ export default {
             res.length === 0 ? this.searchError = true : this.searchError = false;
         },
         getCityWeather(city) {
+            this.searchResults = [];
             const [lon, lat] = city.geometry.coordinates;
             this.isListOpen = false;
             this.getCurrentWeather(lon, lat);
@@ -50,7 +47,7 @@ export default {
         getCurrentWeather(lon, lat) {
             axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=17b5bd1f95000e59acd9e4995f34d2aa&units=metric`)
                 .then(res => {
-                    this.cityWeather = res.data;
+                    store.cityWeather = res.data;
                 })
                 .catch(err => {
                     this.searchError = true;
@@ -60,7 +57,7 @@ export default {
         getWeatherData(lon, lat) {
             axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
                 .then(res => {
-                    this.weatherData = res.data;
+                    store.weatherData = res.data;
                     this.getCityDateTime(res.data)
                 })
                 .catch(err => {
@@ -84,47 +81,37 @@ export default {
             const dayOfWeek = dateTime.weekdayLong;
             return dayOfWeek;
         },
-        saveToLocalStorage() {
-            const cityData = {
-                cityName: this.cityWeather.name,
-                weatherData: this.weatherData,
-                cityWeather: this.cityWeather
-            };
-            if (cityData.cityWeather.length !== 0 && !this.isCityAlreadySaved(cityData.cityName)) {
-                this.savedLocations.push(cityData);
-                localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
-            }
-        },
-        isCityAlreadySaved(cityName) {
-            return this.savedLocations.some(location => location.cityName === cityName);
-        },
         getSavedCityWeather(index) {
             this.savedWeatherData = JSON.parse(localStorage.getItem('savedLocations'));
-            if (this.savedWeatherData && this.savedLocations.length !== 0) {
-                this.cityWeather = this.savedWeatherData[index].cityWeather;
-                this.weatherData = this.savedWeatherData[index].weatherData;
-                this.getCityDateTime(this.weatherData);
+            if (this.savedWeatherData && store.savedLocations.length !== 0) {
+                store.cityWeather = this.savedWeatherData[index].cityWeather;
+                store.weatherData = this.savedWeatherData[index].weatherData;
+                this.getCityDateTime(store.weatherData);
             }
         },
         deleteCity(index) {
-            this.savedLocations.splice(index, 1);
-            localStorage.setItem('savedLocations', JSON.stringify(this.savedLocations));
+            store.savedLocations.splice(index, 1);
+
+            if (store.savedLocations.length === 0) {
+                localStorage.removeItem('savedLocations');
+            } else {
+                localStorage.setItem('savedLocations', JSON.stringify(store.savedLocations));
+            }
         },
         openList() {
             this.inputSearch === '' ? this.isListOpen = false : this.isListOpen = true;
-            this.inputSearch === '' && !this.isListOpen && (this.searchResults = []);
         }
     },
     mounted() {
         const localStoreData = JSON.parse(localStorage.getItem('savedLocations'));
-        if (localStoreData.length > 0) {
-            localStoreData.forEach(city => this.savedLocations.push(city));
-            this.cityWeather = localStoreData[localStoreData.length - 1].cityWeather;
-            this.weatherData = localStoreData[localStoreData.length - 1].weatherData;
+        if (localStoreData && localStoreData.length > 0) {
+            localStoreData.forEach(city => store.savedLocations.push(city));
+            store.cityWeather = localStoreData[localStoreData.length - 1].cityWeather;
+            store.weatherData = localStoreData[localStoreData.length - 1].weatherData;
         }
     },
     beforeUpdate() {
-        this.saveLocation === true && this.saveToLocalStorage();
+        this.saveLocation === true && store.saveToLocalStorage();
     }
 }
 
@@ -143,12 +130,11 @@ export default {
             <div v-if="searchError" class="error">No cities found...</div>
         </div>
         <!-- saved locations -->
-        <!-- <button @click="saveToLocalStorage">add</button> -->
         <Transition name="pop">
-            <div v-if="savedLocations.length !== 0" class="saved_cities">
+            <div v-if="store.savedLocations.length !== 0" class="saved_cities">
                 <h3 class="capitalize">saved locations</h3>
                 <div class="cities_container">
-                    <div @click="getSavedCityWeather(index)" v-for="(city, index) in savedLocations" class="city">
+                    <div @click="getSavedCityWeather(index)" v-for="(city, index) in store.savedLocations" class="city">
                         <div class="city_name">{{ city.cityName }}</div>
                         <i @click="deleteCity(index)" class="fa-regular fa-trash-can"></i>
                     </div>
@@ -157,24 +143,24 @@ export default {
         </Transition>
         <!-- weather -->
         <Transition name="pop">
-            <div v-if="cityWeather.length !== 0" class="weather">
+            <div v-if="store.cityWeather.length !== 0" class="weather">
                 <div class="top">
-                    <h2>{{ cityWeather.name }}</h2>
+                    <h2>{{ store.cityWeather.name }}</h2>
                     <h5>{{ cityDate }}<br>{{ cityTime }}</h5>
                 </div>
                 <div class="middle">
-                    <h1>{{ cityWeather.main.temp.toFixed(0) }}<span>°</span></h1>
-                    <img :src="'/img/' + cityWeather.weather[0].icon + '.png'" alt="wheather icon">
-                    <h5 class="capitalize">Feels Like {{ cityWeather.main.temp.toFixed(0)
-                        }}°<br>{{ cityWeather.weather[0].description }}</h5>
+                    <h1>{{ store.cityWeather.main.temp.toFixed(0) }}<span>°</span></h1>
+                    <img :src="'/img/' + store.cityWeather.weather[0].icon + '.png'" alt="wheather icon">
+                    <h5 class="capitalize">Feels Like {{ store.cityWeather.main.temp.toFixed(0)
+                        }}°<br>{{ store.cityWeather.weather[0].description }}</h5>
                 </div>
             </div>
         </Transition>
         <!-- hourly weather -->
-        <div v-if="weatherData.length !== 0" class="hourly_weather">
+        <div v-if="store.weatherData.length !== 0" class="hourly_weather">
             <h3 class="capitalize">Hourly weather</h3>
             <div class="hours_container">
-                <div v-for="hourly in weatherData.hourly" class="hour" :key="hourly.dt">
+                <div v-for="hourly in store.weatherData.hourly" class="hour" :key="hourly.dt">
                     <p>{{ getHourlyTime(hourly.dt) }}</p>
                     <img :src="'/img/' + hourly.weather[0].icon + '.png'" alt="weather icon">
                     <div class="temp">{{ Math.round(hourly.temp) }}°</div>
@@ -182,10 +168,10 @@ export default {
             </div>
         </div>
         <!-- weekly weather -->
-        <div v-if="weatherData.length !== 0" class="weekly_weather">
+        <div v-if="store.weatherData.length !== 0" class="weekly_weather">
             <h3 class="capitalize">weekly weather</h3>
             <div class="days_container">
-                <div v-for="daily in weatherData.daily" class="day" :key="daily.dt">
+                <div v-for="daily in store.weatherData.daily" class="day" :key="daily.dt">
                     <p>{{ getDayOfWeek(daily.dt) }}</p>
                     <img :src="'/img/' + daily.weather[0].icon + '.png'" alt="weather icon">
                     <div class="temp">
