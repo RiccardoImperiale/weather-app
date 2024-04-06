@@ -1,3 +1,3 @@
 # Vue Weather App
-![alt text](./public/thumb-3.png)
-![alt text](./public/thumb-4.png)
+![alt text](./public/screen-3.png)
+![alt text](./public/screen-4.png)
