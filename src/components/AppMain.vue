@@ -2,12 +2,13 @@
 import axios from 'axios';
 import { DateTime } from 'luxon';
 import { store } from '../store.js';
-const mapboxAPIKey = "pk.eyJ1Ijoiam9obmtvbWFybmlja2kiLCJhIjoiY2t5NjFzODZvMHJkaDJ1bWx6OGVieGxreSJ9.IpojdT3U3NENknF6_WhR2Q";
+
 
 export default {
     name: 'AppMain',
     data() {
         return {
+            mapboxAPIKey: import.meta.env.VITE_OPENWEATHERMAP_API_KEY,
             store,
             inputSearch: '',
             searchResults: [],
@@ -21,7 +22,7 @@ export default {
     methods: {
         searchCity() {
             if (this.inputSearch !== '') {
-                axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${this.inputSearch}.json?access_token=${mapboxAPIKey}&types=place`)
+                axios.get(`https://api.mapbox.com/geocoding/v5/mapbox.places/${this.inputSearch}.json?access_token=${this.mapboxAPIKey}&types=place`)
                     .then(res => {
                         this.isListOpen = true;
                         this.searchResults = res.data.features;
@@ -45,7 +46,7 @@ export default {
             this.inputSearch = '';
         },
         getCurrentWeather(lon, lat) {
-            axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=17b5bd1f95000e59acd9e4995f34d2aa&units=metric`)
+            axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
                 .then(res => {
                     store.cityWeather = res.data;
                 })
@@ -55,7 +56,7 @@ export default {
                 })
         },
         getWeatherData(lon, lat) {
-            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&exclude={part}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
+            axios.get(`https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lon}&appid=7efa332cf48aeb9d2d391a51027f1a71&units=metric`)
                 .then(res => {
                     store.weatherData = res.data;
                     this.getCityDateTime(res.data)
