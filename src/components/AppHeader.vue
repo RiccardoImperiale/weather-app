@@ -10,9 +10,9 @@ export default {
     data() {
         return {
             store,
-            isModalOpen: false,
+            isModalOpen: true,
         }
-    }
+    },
 }
 </script>
 
